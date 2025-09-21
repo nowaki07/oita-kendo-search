@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>大分県道検索</title>
+  <style>
+    body { font-family: sans-serif; margin: 2em; }
+    input, button { font-size: 1em; padding: 0.5em; margin: 0.5em 0; }
+    #result { margin-top: 1em; font-weight: bold; color: navy; }
+  </style>
+</head>
+<body>
+  <h1>大分県道検索（自分用）</h1>
+
+  <p>県道番号を入力してください:</p>
+  <input type="number" id="numberInput" placeholder="例: 1">
+  <button onclick="searchRoute()">検索</button>
+
+  <div id="result"></div>
+
+  <script>
+    let routeData = {};
+
+    // CSVを読み込む
+    fetch("oita_kendo.csv")
+      .then(res => res.text())
+      .then(text => {
+        const rows = text.split("\n").slice(1); // ヘッダーを除く
+        rows.forEach(row => {
+          const [number, name] = row.split(",");
+          if(number && name) routeData[number.trim()] = name.trim();
+        });
+        console.log("CSV読み込み完了", routeData);
+      })
+      .catch(err => console.error("CSV読み込みエラー:", err));
+
+    function searchRoute() {
+      const num = document.getElementById("numberInput").value;
+      const resultDiv = document.getElementById("result");
+      if (routeData[num]) {
+        resultDiv.textContent = `県道${num}号：${routeData[num]}`;
+      } else {
+        resultDiv.textContent = "該当する県道は見つかりません。";
+      }
+    }
+  </script>
+</body>
+</html>
