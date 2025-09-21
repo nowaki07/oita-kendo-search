@@ -3,30 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <title>大分県道検索</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+    input { padding: 5px; font-size: 16px; }
+    button { padding: 5px 10px; font-size: 16px; margin-left: 5px; }
+    #result { margin-top: 20px; font-size: 18px; font-weight: bold; }
+  </style>
 </head>
 <body>
   <h1>大分県道検索</h1>
-  <input type="number" id="kendoNumber" placeholder="県道番号">
+  <p>県道番号を入力してください：</p>
+  <input type="number" id="kendoNumber" placeholder="例: 1">
   <button onclick="searchKendo()">検索</button>
   <div id="result"></div>
 
   <script>
     let kendoData = {};
 
+    // CSVを読み込む
     fetch("oita_kendo.csv")
-      .then(res => res.text())
+      .then(response => response.text())
       .then(text => {
-        let rows = text.split("\n").slice(1);
+        let rows = text.split("\n").slice(1); // ヘッダーを除く
         rows.forEach(row => {
           let [num, name] = row.split(",");
-          if(num && name) kendoData[num.trim()] = name.trim();
+          if(num && name){
+            kendoData[num.trim()] = name.trim();
+          }
         });
       });
 
     function searchKendo() {
       let num = document.getElementById("kendoNumber").value;
       let result = document.getElementById("result");
-      result.textContent = kendoData[num] ? "県道" + num + "号: " + kendoData[num] : "該当なし";
+      if (kendoData[num]) {
+        result.textContent = "県道" + num + "号: " + kendoData[num];
+      } else {
+        result.textContent = "該当する県道が見つかりません。";
+      }
     }
   </script>
 </body>
