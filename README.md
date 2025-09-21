@@ -1,1 +1,0 @@
-# oita-kendo-search
