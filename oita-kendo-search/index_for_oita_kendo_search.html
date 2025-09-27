@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>大分県道検索（完成版）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background:#f7fafc; color:#1f2937; margin:0; padding:2rem; }
+    .container{max-width:640px; margin:0 auto; background:#fff; padding:1.5rem; border-radius:12px; box-shadow:0 6px 24px rgba(15,23,42,0.06)}
+    h1{margin:0 0 1rem; font-size:1.5rem}
+    label{display:block; margin-bottom:.5rem}
+    input[type=number]{width:100%; padding:.6rem; font-size:1rem; border:1px solid #e5e7eb; border-radius:8px}
+    button{margin-top:.6rem; padding:.6rem 1rem; font-size:1rem; background:#0ea5a4;color:#fff;border:none;border-radius:8px;cursor:pointer}
+    #result{margin-top:1rem; font-weight:600}
+    .small{font-size:.9rem; color:#6b7280}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>大分県道検索</h1>
+    <p class="small">県道番号を入力すると路線名を表示します。数値のみ入力してください。</p>
+
+    <label for="kendoNumber">県道番号</label>
+    <input type="number" id="kendoNumber" placeholder="例: 1">
+    <button id="searchBtn">検索</button>
+    <div id="result" role="status" aria-live="polite"></div>
+    <p class="small">データ元: ウィキペディア（「大分県の県道一覧」）を基に作成。</p>
+  </div>
+
+  <script>
+    const csvFile = 'oita_kendo_complete.csv';
+    let kendoData = {};
+
+    async function loadCSV(){
+      try{
+        const res = await fetch(csvFile);
+        if(!res.ok) throw new Error('CSV読み込み失敗: '+res.status);
+        const text = await res.text();
+        const lines = text.trim().split(/\r?\n/);
+        for(let i=1;i<lines.length;i++){
+          const row = lines[i].trim();
+          if(!row) continue;
+          // カンマが路線名にも入っている可能性を考慮して最初のカンマで分割
+          const idx = row.indexOf(',');
+          if(idx===-1) continue;
+          const num = row.slice(0,idx).trim();
+          const name = row.slice(idx+1).trim();
+          kendoData[num] = name;
+        }
+        console.log('CSV読み込み完了', Object.keys(kendoData).length);
+      }catch(e){
+        console.error(e);
+        document.getElementById('result').textContent = 'データ読み込みに失敗しました。ファイル名と場所を確認してください。';
+      }
+    }
+
+    document.getElementById('searchBtn').addEventListener('click', ()=>{
+      const num = document.getElementById('kendoNumber').value.trim();
+      const el = document.getElementById('result');
+      if(!num){ el.textContent = '番号を入力してください。'; return; }
+      if(kendoData[num]){
+        el.textContent = `県道${num}号：${kendoData[num]}`;
+      }else{
+        el.textContent = '該当する県道は見つかりません。';
+      }
+    });
+
+    // ページ読み込み時にCSVをロード
+    loadCSV();
+  </script>
+</body>
+</html>
